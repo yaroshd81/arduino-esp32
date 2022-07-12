@@ -22,7 +22,6 @@
 #define _ETH_H_
 
 #include "WiFi.h"
-#include "esp_system.h"
 #include "esp_eth.h"
 
 #ifndef ETH_PHY_ADDR
@@ -49,33 +48,20 @@
 #define ETH_CLK_MODE ETH_CLOCK_GPIO0_IN
 #endif
 
-#if ESP_IDF_VERSION_MAJOR > 3
-typedef enum { ETH_CLOCK_GPIO0_IN, ETH_CLOCK_GPIO0_OUT, ETH_CLOCK_GPIO16_OUT, ETH_CLOCK_GPIO17_OUT } eth_clock_mode_t;
-#endif
-
-typedef enum { ETH_PHY_LAN8720, ETH_PHY_TLK110, ETH_PHY_RTL8201, ETH_PHY_DP83848, ETH_PHY_DM9051, ETH_PHY_KSZ8081, ETH_PHY_MAX } eth_phy_type_t;
-#define ETH_PHY_IP101 ETH_PHY_TLK110
+typedef enum { ETH_PHY_LAN8720, ETH_PHY_TLK110, ETH_PHY_IP101, ETH_PHY_MAX } eth_phy_type_t;
 
 class ETHClass {
     private:
         bool initialized;
         bool staticIP;
-#if ESP_IDF_VERSION_MAJOR > 3
-        esp_eth_handle_t eth_handle;
-
-    protected:
-        bool started;
-        eth_link_t eth_link;
-        static void eth_event_handler(void *arg, esp_event_base_t event_base, int32_t event_id, void *event_data);
-#else
         bool started;
         eth_config_t eth_config;
-#endif
     public:
         ETHClass();
         ~ETHClass();
 
-        bool begin(uint8_t phy_addr=ETH_PHY_ADDR, int power=ETH_PHY_POWER, int mdc=ETH_PHY_MDC, int mdio=ETH_PHY_MDIO, eth_phy_type_t type=ETH_PHY_TYPE, eth_clock_mode_t clk_mode=ETH_CLK_MODE);
+
+        bool begin(const uint8_t mac_eth[6], uint8_t phy_addr=ETH_PHY_ADDR, int power=ETH_PHY_POWER, int mdc=ETH_PHY_MDC, int mdio=ETH_PHY_MDIO, eth_phy_type_t type=ETH_PHY_TYPE, eth_clock_mode_t clk_mode=ETH_CLK_MODE);
 
         bool config(IPAddress local_ip, IPAddress gateway, IPAddress subnet, IPAddress dns1 = (uint32_t)0x00000000, IPAddress dns2 = (uint32_t)0x00000000);
 
@@ -100,6 +86,7 @@ class ETHClass {
 
         uint8_t * macAddress(uint8_t* mac);
         String macAddress();
+        void disconnect();
 
         friend class WiFiClient;
         friend class WiFiServer;
